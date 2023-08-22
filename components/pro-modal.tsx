@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { useProModal } from "@/hooks/use-pro-modal";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -26,7 +26,6 @@ export const ProModal = () => {
     setIsMounted(true);
   }, []);
 
-
   const onSubscribe = async () => {
     try {
       setLoading(true);
@@ -35,13 +34,13 @@ export const ProModal = () => {
       window.location.href = response.data.url;
     } catch (error) {
       toast({
-        description: "Something went wrong",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   if (!isMounted) {
     return null;
@@ -51,19 +50,17 @@ export const ProModal = () => {
     <Dialog open={proModal.isOpen} onOpenChange={proModal.onClose}>
       <DialogContent>
         <DialogHeader className="space-y-4">
-          <DialogTitle className="text-center">
-            Upgrade to Pro
-          </DialogTitle>
+          <DialogTitle className="text-center">Upgrade to Pro</DialogTitle>
           <DialogDescription className="text-center space-y-2">
             Create
-            <span className="text-sky-500 mx-1 font-medium">Custom AI</span>
-            Companions!
+            <span className="text-sky-500 mx-1 font-medium">Unlimited</span>
+            Personas!
           </DialogDescription>
         </DialogHeader>
         <Separator />
         <div className="flex justify-between">
           <p className="text-2xl font-medium">
-            $9<span className="text-sm font-normal">.99 / mo</span>
+            $19<span className="text-sm font-normal">.99 / mo</span>
           </p>
           <Button onClick={onSubscribe} disabled={loading} variant="premium">
             Subscribe
