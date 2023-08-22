@@ -34,7 +34,7 @@ model Companion {
   messages      Message[]
 
   @@index([categoryId])
-  @@fulltext([name])
+ // @@fulltext([name])
 }
 
 enum Role {
