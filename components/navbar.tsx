@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Poppins } from "next/font/google";
 import { Sparkles } from "lucide-react";
 
@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 import { useProModal } from "@/hooks/use-pro-modal";
 
 const font = Poppins({ weight: "600", subsets: ["latin"] });
-interface NavbarProps {
+type NavbarProps = {
   isPro: boolean;
-}
+};
 
 export const Navbar = ({ isPro }: NavbarProps) => {
   const proModal = useProModal();
@@ -35,14 +35,19 @@ export const Navbar = ({ isPro }: NavbarProps) => {
         </Link>
       </div>
       <div className="flex items-center gap-x-3">
-        {!isPro && (
-          <Button onClick={proModal.onOpen} size="sm" variant="premium">
-            Upgrade
-            <Sparkles className="h-4 w-4 fill-white text-white ml-2" />
-          </Button>
-        )}
         <ModeToggle />
-        <UserButton afterSignOutUrl="/" />
+        <SignedIn>
+          {!isPro && (
+            <Button onClick={proModal.onOpen} size="sm" variant="premium">
+              Upgrade
+              <Sparkles className="h-4 w-4 fill-white text-white ml-2" />
+            </Button>
+          )}
+          <UserButton afterSignOutUrl="/" />
+        </SignedIn>
+        <SignedOut>
+          <SignInButton />
+        </SignedOut>
       </div>
     </div>
   );
