@@ -8,7 +8,7 @@ import { ChatMessage, ChatMessageProps } from "@/components/chat-message";
 interface ChatMessagesProps {
   messages: ChatMessageProps[];
   isLoading: boolean;
-  companion: Companion
+  companion: Companion;
 }
 
 export const ChatMessages = ({
@@ -18,7 +18,9 @@ export const ChatMessages = ({
 }: ChatMessagesProps) => {
   const scrollRef = useRef<ElementRef<"div">>(null);
 
-  const [fakeLoading, setFakeLoading] = useState(messages.length === 0 ? true : false);
+  const [fakeLoading, setFakeLoading] = useState(
+    messages.length === 0 ? true : false
+  );
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -27,11 +29,11 @@ export const ChatMessages = ({
 
     return () => {
       clearTimeout(timeout);
-    }
+    };
   }, []);
 
   useEffect(() => {
-    scrollRef?.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollRef?.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
   return (
@@ -50,13 +52,7 @@ export const ChatMessages = ({
           role={message.role}
         />
       ))}
-      {isLoading && (
-        <ChatMessage
-          src={companion.src}
-          role="system"
-          isLoading
-        />
-      )}
+      {isLoading && <ChatMessage src={companion.src} role="system" isLoading />}
       <div ref={scrollRef} />
     </div>
   );

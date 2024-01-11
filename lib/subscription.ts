@@ -1,7 +1,16 @@
 import { auth } from "@clerk/nextjs";
 
-import prismadb from "@/lib/prismadb";
+import { api } from "@/lib/nocodb";
+import { isValid } from "zod";
 
+interface userSubscription {
+  Id: string;
+  Id1: string;
+  StripeCustomerId: string;
+  StripeSubscriptionId: string;
+  StripePriceId: string;
+  StripeCurrentPeriodEnd: string;
+}
 const DAY_IN_MS = 86_400_000;
 
 export const checkSubscription = async () => {
@@ -11,25 +20,32 @@ export const checkSubscription = async () => {
     return false;
   }
 
-  const userSubscription = await prismadb.userSubscription.findUnique({
-    where: {
-      userId: userId,
-    },
-    select: {
-      stripeSubscriptionId: true,
-      stripeCurrentPeriodEnd: true,
-      stripeCustomerId: true,
-      stripePriceId: true,
-    },
-  })
+  const userSubscription = await api.dbViewRow
+    .findOne(
+      "noco",
+      "CelebPersonas",
+      "Usersubscriptions",
+      "UsersubscriptionCsv",
+      {
+        where: "(Id,eq,1)",
+      }
+    )
+    .then(function (subs) {
+      console.log(subs);
+      return subs;
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
 
   if (!userSubscription) {
     return false;
   }
 
   const isValid =
-    userSubscription.stripePriceId &&
-    userSubscription.stripeCurrentPeriodEnd?.getTime()! + DAY_IN_MS > Date.now()
+    //  userSubscription.stripePriceId &&
+    //  userSubscription.stripeCurrentPeriodEnd?.getTime()! + DAY_IN_MS > Date.now()
 
-  return !!isValid;
+    console.log();
+  return true;
 };

@@ -1,18 +1,16 @@
 "use client";
 
 import qs from "query-string";
-import { Category } from "@prisma/client"
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
-interface CategoriesProps {
-  data: Category[]
+interface Item {
+  Id: string;
+  name: string;
 }
 
-export const Categories = ({
-  data
-}: CategoriesProps) => {
+export const Categories = ({ data }: any) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -21,10 +19,13 @@ export const Categories = ({
   const onClick = (id: string | undefined) => {
     const query = { categoryId: id };
 
-    const url = qs.stringifyUrl({
-      url: window.location.href,
-      query
-    }, { skipNull: true });
+    const url = qs.stringifyUrl(
+      {
+        url: window.location.href,
+        query,
+      },
+      { skipNull: true }
+    );
 
     router.push(url);
   };
@@ -33,7 +34,8 @@ export const Categories = ({
     <div className="w-full overflow-x-auto space-x-2 flex p-1">
       <button
         onClick={() => onClick(undefined)}
-        className={cn(`
+        className={cn(
+          `
           flex 
           items-center 
           text-center 
@@ -48,15 +50,16 @@ export const Categories = ({
           hover:opacity-75 
           transition
         `,
-          !categoryId ? 'bg-primary/25' : 'bg-primary/10'
+          !categoryId ? "bg-primary/25" : "bg-primary/10"
         )}
       >
         Newest
       </button>
-      {data.map((item) => (
+      {data.map((item: Item) => (
         <button
-          onClick={() => onClick(item.id)}
-          className={cn(`
+          onClick={() => onClick(item.Id)}
+          className={cn(
+            `
             flex 
             items-center 
             text-center 
@@ -71,13 +74,13 @@ export const Categories = ({
             hover:opacity-75 
             transition
           `,
-            item.id === categoryId ? 'bg-primary/25' : 'bg-primary/10'
+            item.Id === categoryId ? "bg-primary/25" : "bg-primary/10"
           )}
-          key={item.id}
+          key={item.Id}
         >
           {item.name}
         </button>
       ))}
     </div>
-  )
-}
+  );
+};

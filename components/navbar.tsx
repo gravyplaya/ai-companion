@@ -10,10 +10,12 @@ import { MobileSidebar } from "@/components/mobile-sidebar";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { useProModal } from "@/hooks/use-pro-modal";
+import { FreeCounter } from "@/components/free-counter";
 
 const font = Poppins({ weight: "600", subsets: ["latin"] });
 type NavbarProps = {
   isPro: boolean;
+  apiLimitCount?: any;
 };
 
 export const Navbar = ({ isPro }: NavbarProps) => {
@@ -35,6 +37,8 @@ export const Navbar = ({ isPro }: NavbarProps) => {
         </Link>
       </div>
       <div className="flex items-center gap-x-3">
+        {/* <FreeCounter apiLimitCount={apiLimitCount} isPro={isPro} /> */}
+
         <ModeToggle />
         <SignedIn>
           {!isPro && (

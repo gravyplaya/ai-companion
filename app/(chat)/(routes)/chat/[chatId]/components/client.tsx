@@ -4,6 +4,7 @@ import { useCompletion } from "ai/react";
 import { FormEvent, useState } from "react";
 import { Companion, Message } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import { api, getCompanions, getMessages } from "@/lib/nocodb";
 
 import { ChatForm } from "@/components/chat-form";
 import { ChatHeader } from "@/components/chat-header";
@@ -15,62 +16,71 @@ interface ChatClientProps {
     messages: Message[];
     _count: {
       messages: number;
-    }
+    };
   };
-};
+}
 
-export const ChatClient = ({
-  companion,
-}: ChatClientProps) => {
+export const ChatClient = ({ companion }: any) => {
   const router = useRouter();
-  const [messages, setMessages] = useState<ChatMessageProps[]>(companion.messages);
-  
-  const {
-    input,
-    isLoading,
-    handleInputChange,
-    handleSubmit,
-    setInput,
-  } = useCompletion({
-    api: `/api/chat/${companion.id}`,
-    onFinish(_prompt, completion) {
-      const systemMessage: ChatMessageProps = {
-        role: "system",
-        content: completion
-      };
+  const [messages, setMessages] = useState<ChatMessageProps[]>(
+    companion.messages
+  );
 
-      setMessages((current) => [...current, systemMessage]);
-      setInput("");
+  const { input, isLoading, handleInputChange, handleSubmit, setInput } =
+    useCompletion({
+      api: `/api/chat/${companion.Id}`,
+      onFinish(_prompt, completion) {
+        const systemMessage: ChatMessageProps = {
+          role: "system",
+          content: completion,
+        };
 
-      router.refresh();
-    },
-  });
+        setMessages((current) => {
+          if (Array.isArray(current)) {
+            return [...current, systemMessage];
+          } else {
+            return [systemMessage];
+          }
+        });
+        setInput("");
+
+        router.refresh();
+      },
+    });
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     const userMessage: ChatMessageProps = {
       role: "user",
-      content: input
+      content: input,
     };
 
-    setMessages((current) => [...current, userMessage]);
+    setMessages((current) => {
+      if (Array.isArray(current)) {
+        return [...current, userMessage];
+      } else {
+        return [userMessage];
+      }
+    });
 
     handleSubmit(e);
-  }
+  };
+  // console.log("companion: ", companion);
+  // console.log("companion_messages: ", companion.messages);
 
   return (
     <div className="flex flex-col h-full p-4 space-y-2">
       <ChatHeader companion={companion} />
-      <ChatMessages 
+      <ChatMessages
         companion={companion}
         isLoading={isLoading}
-        messages={messages}
+        messages={companion.messages}
       />
-      <ChatForm 
-        isLoading={isLoading} 
-        input={input} 
-        handleInputChange={handleInputChange} 
-        onSubmit={onSubmit} 
+      <ChatForm
+        isLoading={isLoading}
+        input={input}
+        handleInputChange={handleInputChange}
+        onSubmit={onSubmit}
       />
     </div>
-   );
-}
+  );
+};

@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Plus, Settings } from "lucide-react";
+import { Home, Plus, Settings, Info } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -10,9 +10,7 @@ interface SidebarProps {
   isPro: boolean;
 }
 
-export const Sidebar = ({
-  isPro
-}: SidebarProps) => {
+export const Sidebar = ({ isPro }: SidebarProps) => {
   const proModal = useProModal();
   const router = useRouter();
   const pathname = usePathname();
@@ -23,25 +21,31 @@ export const Sidebar = ({
     }
 
     return router.push(url);
-  }
+  };
 
   const routes = [
     {
       icon: Home,
-      href: '/',
+      href: "/",
       label: "Home",
       pro: false,
     },
     {
       icon: Plus,
-      href: '/companion/new',
+      href: "/companion/new",
       label: "Create",
-      pro: true,
+      pro: false,
     },
     {
       icon: Settings,
-      href: '/settings',
+      href: "/settings",
       label: "Settings",
+      pro: false,
+    },
+    {
+      icon: Info,
+      href: "/about",
+      label: "About",
       pro: false,
     },
   ];
@@ -56,7 +60,7 @@ export const Sidebar = ({
               key={route.href}
               className={cn(
                 "text-muted-foreground text-xs group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition",
-                pathname === route.href && "bg-primary/10 text-primary",
+                pathname === route.href && "bg-primary/10 text-primary"
               )}
             >
               <div className="flex flex-col gap-y-2 items-center flex-1">
