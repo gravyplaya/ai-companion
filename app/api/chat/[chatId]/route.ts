@@ -5,6 +5,7 @@ import { Replicate } from "langchain/llms/replicate";
 import { CallbackManager } from "langchain/callbacks";
 import { NextResponse } from "next/server";
 
+import { getUserSubscription } from "@/lib/nocodb";
 import { MemoryManager } from "@/lib/memory";
 import { rateLimit } from "@/lib/rate-limit";
 import prismadb from "@/lib/prismadb";
@@ -32,7 +33,7 @@ export async function POST(
 
     const companion = await prismadb.companion.update({
       where: {
-        id: params.chatId
+        id: params.chatId,
       },
       data: {
         messages: {
@@ -42,9 +43,9 @@ export async function POST(
             userId: user.id,
           },
         },
-      }
+      },
     });
-
+    console.log("companion: ", companion);
     if (!companion) {
       return new NextResponse("Companion not found", { status: 404 });
     }
@@ -67,7 +68,9 @@ export async function POST(
 
     // Query Pinecone
 
-    const recentChatHistory = await memoryManager.readLatestHistory(companionKey);
+    const recentChatHistory = await memoryManager.readLatestHistory(
+      companionKey
+    );
 
     // Right now the preamble is included in the similarity search, but that
     // shouldn't be an issue
@@ -81,41 +84,82 @@ export async function POST(
     if (!!similarDocs && similarDocs.length !== 0) {
       relevantHistory = similarDocs.map((doc) => doc.pageContent).join("\n");
     }
-    const { handlers } = LangChainStream();
+    // const { handlers } = LangChainStream();
     // Call Replicate for inference
-    const model = new Replicate({
-      model:
-        "a16z-infra/llama-2-13b-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5",
-      input: {
-        max_length: 2048,
-      },
-      apiKey: process.env.REPLICATE_API_TOKEN,
-      callbackManager: CallbackManager.fromHandlers(handlers),
-    });
+    // const model = new Replicate({
+    //   model:
+    //     "a16z-infra/llama-2-13b-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5",
+    //   input: {
+    //     max_length: 2048,
+    //   },
+    //   apiKey: process.env.REPLICATE_API_TOKEN,
+    //   callbackManager: CallbackManager.fromHandlers(handlers),
+    // });
 
     // Turn verbose on for debugging
-    model.verbose = true;
+    // model.verbose = true;
 
-    const resp = String(
-      await model
-        .call(
-          `
-        ONLY generate plain sentences without prefix of who is speaking. DO NOT use ${companion.name}: prefix. 
+    // const resp = String(
+    //   await model
+    //     .call(
+    //       `
+    //     ONLY generate plain sentences without prefix of who is speaking. DO NOT use ${companion.name}: prefix.
 
-        ${companion.instructions}
+    //     ${companion.instructions}
 
-        Below are relevant details about ${companion.name}'s past and the conversation you are in.
-        ${relevantHistory}
+    //     Below are relevant details about ${companion.name}'s past and the conversation you are in.
+    //     ${relevantHistory}
 
+    //     ${recentChatHistory}\n${companion.name}:`
+    //     )
+    //     .catch(console.error)
+    // );
+    const options = {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        authorization: "Bearer " + process.env.PERPLEXITY_API_KEY,
+      },
+      body: JSON.stringify({
+        model: "pplx-70b-chat",
+        messages: [
+          {
+            role: "system",
+            content: `
+               ONLY generate plain sentences without prefix of who is speaking. DO NOT use ${companion.name}: prefix.
 
-        ${recentChatHistory}\n${companion.name}:`
-        )
-        .catch(console.error)
-    );
+               PREAMBLE: 
+               ${companion.instructions}
+               
+               SEED_CHAT:
+               ${companion.seed}
 
-    const cleaned = resp.replaceAll(",", "");
-    const chunks = cleaned.split("\n");
-    const response = chunks[0];
+               Below are relevant details about ${companion.name}'s past and the conversation you are in.
+               ${relevantHistory}
+      
+               ${recentChatHistory}\n${companion.name}:`,
+          },
+          { role: "user", content: prompt },
+        ],
+        // stream: true,
+      }),
+    };
+
+    const response = await fetch(
+      "https://api.perplexity.ai/chat/completions",
+      options
+    )
+      .then((response) => response.json())
+      .then((response) => {
+        return response.choices[0].message.content;
+      })
+      .catch((err) => console.error("pplex err: ", err));
+
+    // used for reading stream from chuncks
+    // const cleaned = resp.replaceAll(",", "");    // remove commas
+    // const chunks = cleaned.split("\n");    // split into chunks by newline
+    // const response = chunks[0];    // take the first chunk
 
     await memoryManager.writeToHistory("" + response.trim(), companionKey);
     var Readable = require("stream").Readable;
@@ -128,7 +172,7 @@ export async function POST(
 
       await prismadb.companion.update({
         where: {
-          id: params.chatId
+          id: params.chatId,
         },
         data: {
           messages: {
@@ -138,7 +182,7 @@ export async function POST(
               userId: user.id,
             },
           },
-        }
+        },
       });
     }
 
@@ -146,4 +190,4 @@ export async function POST(
   } catch (error) {
     return new NextResponse("Internal Error", { status: 500 });
   }
-};
+}
