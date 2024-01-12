@@ -121,7 +121,7 @@ export async function POST(
         authorization: "Bearer " + process.env.PERPLEXITY_API_KEY,
       },
       body: JSON.stringify({
-        model: "pplx-70b-online",
+        model: "pplx-70b-chat",
         messages: [
           {
             role: "system",
