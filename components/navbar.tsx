@@ -32,6 +32,14 @@ export const Navbar = ({ isPro }: NavbarProps) => {
           >
             Celebrity Personas
           </h1>
+          <h2
+            className={cn(
+              "hidden md:block text-xs md:text-1xl  text-green-500",
+              font.className
+            )}
+          >
+            beta
+          </h2>
         </Link>
       </div>
       <div className="flex items-center gap-x-3">
